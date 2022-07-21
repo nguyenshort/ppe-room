@@ -13,13 +13,26 @@ const props = defineProps<{
   uid: string|number
   localAudioTrack?: ILocalTrack
   localVideoTrack?: ILocalTrack
+  user: string|number
 }>()
 
 const el = ref<HTMLDivElement>()
 
+const emit = defineEmits(['logger'])
+
 onMounted(() => nextTick(() => {
   props.localVideoTrack?.play(el.value)
-  props.localAudioTrack?.play()
+
+  if (props.localAudioTrack) {
+    props.localAudioTrack.play()
+
+    if (props.uid === props.user) {
+      // emit('logger', `Mute myself for fix audio bug`)
+      // props.localAudioTrack.setEnabled(false)
+    }
+
+  }
+
 }))
 
 </script>

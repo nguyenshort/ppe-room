@@ -21,7 +21,7 @@
 
     <div class="container">
       <div ref="groups" class="groups-container">
-        <video-call v-for="user in users" :key="user.uid" v-bind="user"></video-call>
+        <video-call v-for="user in users" :key="user.uid" v-bind="user" :user="userID" @logger="loggers.push($event)"></video-call>
       </div>
 
       <div class="logger">
@@ -63,7 +63,7 @@ const createAndJoin = async () => {
   loggers.value.push(`Joined channel: video_meet`)
 
 
-  const localAudioTrack = await agora.createMicrophoneAudioTrack()
+  const localAudioTrack = await agora.createMicrophoneAudioTrack({ AEC: true, ANS: true })
   const localVideoTrack = await agora.createCameraVideoTrack()
 
   await configRoom(userID.value, { localAudioTrack, localVideoTrack })
