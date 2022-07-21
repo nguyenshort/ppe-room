@@ -2,9 +2,18 @@
   <h1>Vite + Vue + Agora</h1>
 
   <div class="card">
-    <button type="button" @click="toggleRom">
-      {{ users.length ? 'Thoát Phòng' : 'Vào Phòng' }}
-    </button>
+
+    <div class="btns">
+
+      <button type="button" @click="toggleRom">
+        {{ users.length ? 'Thoát Phòng' : 'Vào Phòng' }}
+      </button>
+      <button v-if="users.length" type="button" @click="inviteUsers">
+        Mời Bạn Bè
+      </button>
+
+    </div>
+
 
     <div class="user-id">ID của bạn: {{ userID }}</div>
   </div>
@@ -30,7 +39,8 @@ import {nextTick, onMounted, onUnmounted, ref} from 'vue'
 import {useAgora} from "../compositions/useAgora";
 import agora, {IAgoraRTCRemoteUser, ILocalTrack} from "agora-rtc-sdk-ng";
 import {makeid} from "../utils/random-string";
-import VideoCall from "./VideoCall.vue";
+import VideoCall from "./VideoCall.vue"
+import { getDatabase, ref as dbRef, onValue, set } from "firebase/database";
 
 const userID = ref(makeid(8));
 
@@ -99,6 +109,12 @@ const configRoom = async (uid: string|number, tracks: Options) => {
   users.value.push(_user as IUserRom)
 }
 
+const inviteUsers = () => {
+  set(dbRef(getDatabase(), 'rooms/video_meet'), {
+    time: Date.now()
+  });
+}
+
 
 const trackPublished = async (user: IAgoraRTCRemoteUser, mediaType: "audio" | "video") => {
   // Initiate the subscription
@@ -118,6 +134,9 @@ const trackPublished = async (user: IAgoraRTCRemoteUser, mediaType: "audio" | "v
     })
   }
 }
+
+
+
 const leaveRoom = () => {
   client.leave()
   client.off("user-published", trackPublished)
@@ -171,39 +190,32 @@ onUnmounted(() => {
 
 
 // Firbase
-/*import { getDatabase, ref as dbRef, onValue } from "firebase/database";
-
 const countInvite = ref(0)
 const listenNotify = async () => {
   const starCountRef = dbRef(getDatabase(), 'rooms/video_meet');
   onValue(starCountRef, (snapshot) => {
     const data = snapshot.val();
 
-    /!**
+    /**
      * Có dữ liệu => lời mời cũng đã được gửi | mới
-     * Vừa vào có
+     * Vừa vào có => tăng lên 1 ko có cũng tăng lkeen 1
      *
-     *!/
+     */
 
-    if (data) {
-
-      if (data.invite) {
-        countInvite.value = data.invite
-      }
-
-      countInvite.value++
-
-    }
+    console.log(data)
 
     if (data && countInvite.value && !users.value.length) {
       loggers.value.push(`Bạn được mời vào phòng`)
     }
+
+    countInvite.value++
+
   });
 }
 
 onMounted(() => {
   listenNotify()
-})*/
+})
 
 </script>
 
@@ -223,5 +235,9 @@ onMounted(() => {
   display: grid;
   grid-gap: 30px;
   grid-template-columns: 1fr 250px;
+}
+
+.btns > button + button {
+  margin-left: 30px;
 }
 </style>
