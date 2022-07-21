@@ -1,37 +1,38 @@
 <template>
-  <h1>Vite + Vue + Agora</h1>
+  <div>
+    <h1>Vite + Vue + Agora</h1>
 
-  <div class="card">
+    <div class="card">
 
-    <div class="btns">
+      <div class="btns">
 
-      <button type="button" @click="toggleRom">
-        {{ users.length ? 'Thoát Phòng' : 'Vào Phòng' }}
-      </button>
-      <button v-if="users.length" type="button" @click="inviteUsers">
-        Mời Bạn Bè
-      </button>
+        <button type="button" @click="toggleRom">
+          {{ users.length ? 'Thoát Phòng' : 'Vào Phòng' }}
+        </button>
+        <button v-if="users.length" type="button" @click="inviteUsers">
+          Mời Bạn Bè
+        </button>
 
-    </div>
-
-
-    <div class="user-id">ID của bạn: {{ userID }}</div>
-  </div>
-
-  <div class="container">
-    <div ref="groups" class="groups-container">
-      <video-call v-for="user in users" :key="user.uid" v-bind="user"></video-call>
-    </div>
-
-    <div class="logger">
-
-      <div v-for="(log, index) in loggers" :key="index">
-        {{ log }}
       </div>
 
+
+      <div class="user-id">ID của bạn: {{ userID }}</div>
+    </div>
+
+    <div class="container">
+      <div ref="groups" class="groups-container">
+        <video-call v-for="user in users" :key="user.uid" v-bind="user"></video-call>
+      </div>
+
+      <div class="logger">
+
+        <div v-for="(log, index) in loggers" :key="index">
+          {{ log }}
+        </div>
+
+      </div>
     </div>
   </div>
-
 </template>
 
 <script setup lang="ts">

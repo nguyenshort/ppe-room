@@ -6,19 +6,21 @@ import HelloWorld from './components/HelloWorld.vue'
 
 <template>
   <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
+    <div>
+      <a href="https://vitejs.dev" target="_blank">
+        <img src="/vite.svg" class="logo" alt="Vite logo" />
+      </a>
+      <a href="https://vuejs.org/" target="_blank">
+        <img src="/vue.svg" class="logo vue" alt="Vue logo" />
+      </a>
 
-    <a href="https://www.agora.io/en/" target="_blank">
-      <img src="./assets/agora-logo.svg" class="logo agora" alt="Agra logo" />
-    </a>
+      <a href="https://www.agora.io/en/" target="_blank">
+        <img src="/agora-logo.svg" class="logo agora" alt="Agra logo" />
+      </a>
 
+    </div>
+    <HelloWorld />
   </div>
-  <HelloWorld />
 </template>
 
 <style scoped>
