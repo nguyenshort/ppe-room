@@ -58,12 +58,20 @@ interface IUserRom {
 const users = ref<IUserRom[]>([])
 
 const createAndJoin = async () => {
+
+  client.on("user-published", trackPublished)
+
+  client.on("user-unpublished", (user: IAgoraRTCRemoteUser, mediaType: "audio" | "video") => {
+    loggers.value.push(`Remove user: ${user.uid}`)
+    users.value = users.value.filter(item => item.uid !== user.uid)
+  })
+
   await client.join("6bc0bf7f3e364153ba533fd765fb9c60", "video_meet", null, userID.value);
 
   loggers.value.push(`Joined channel: video_meet`)
 
 
-  const localAudioTrack = await agora.createMicrophoneAudioTrack({ AEC: true, ANS: true })
+  const localAudioTrack = await agora.createMicrophoneAudioTrack()
   const localVideoTrack = await agora.createCameraVideoTrack()
 
   await configRoom(userID.value, { localAudioTrack, localVideoTrack })
@@ -107,7 +115,10 @@ const configRoom = async (uid: string|number, tracks: Options) => {
   await client.publish(_tracks)
 
   // Push vào mảng
-  users.value.push(_user as IUserRom)
+  users.value.push({
+    uid: uid,
+    localVideoTrack: tracks.localVideoTrack
+  })
 }
 
 const inviteUsers = () => {
@@ -147,10 +158,12 @@ const leaveRoom = () => {
     if (user.localVideoTrack) {
       loggers.value.push(`Stop video track: ${user.uid}`)
       user.localVideoTrack.stop()
+      user.localAudioTrack?.close()
     }
     if (user.localAudioTrack) {
       loggers.value.push(`Stop audio track: ${user.uid}`)
       user.localAudioTrack.stop()
+      user.localAudioTrack.close()
     }
   }
 
@@ -169,23 +182,13 @@ onMounted(() => {
 
   loggers.value.push('Init with userID: ' + userID.value)
 
-  nextTick(() => {
-    client.on("user-published", trackPublished)
-
-    client.on("user-unpublished", (user: IAgoraRTCRemoteUser, mediaType: "audio" | "video") => {
-      loggers.value.push(`Remove user: ${user.uid}`)
-      users.value = users.value.filter(item => item.uid !== user.uid)
-    })
-
-  })
-
 })
 
 
 
 onUnmounted(() => {
   client.off("user-published", trackPublished)
-  client.leave()
+  leaveRoom()
 })
 
 

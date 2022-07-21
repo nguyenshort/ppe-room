@@ -24,12 +24,8 @@ onMounted(() => nextTick(() => {
   props.localVideoTrack?.play(el.value)
 
   if (props.localAudioTrack) {
-    props.localAudioTrack.play()
 
-    if (props.uid === props.user) {
-      // emit('logger', `Mute myself for fix audio bug`)
-      // props.localAudioTrack.setEnabled(false)
-    }
+    props.localAudioTrack.play()
 
   }
 
