@@ -20,7 +20,7 @@ export default () => {
 
     const join = async (chanel: string, uid: string) => {
 
-        await rtc.client.enableDualStream()
+       //  await rtc.client.enableDualStream()
 
         await rtc.client.join("6bc0bf7f3e364153ba533fd765fb9c60", "video_meet", null, uid)
         logs.value.push(`Join channel: ${chanel} with uid: ${uid}`)
