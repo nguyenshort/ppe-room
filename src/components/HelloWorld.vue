@@ -16,17 +16,21 @@
       </div>
 
 
-      <div class="user-id">ID của bạn: {{ userID }}</div>
+      <div class="user-id">ID của bạn: {{ uid }}</div>
+      <div class="user-id">Chanel: video_meet</div>
     </div>
 
     <div class="container">
       <div ref="groups" class="groups-container">
-        <video-call v-for="user in users" :key="user.uid" v-bind="user" :user="userID" @logger="loggers.push($event)"></video-call>
+
+        <video-call v-if="agora.isCalling.value" :uid="uid" :local-video-track="rtc.localVideoTrack" ></video-call>
+
+        <video-call v-for="user in users" :key="user.uid" v-bind="user"></video-call>
       </div>
 
       <div class="logger">
 
-        <div v-for="(log, index) in loggers" :key="index">
+        <div v-for="(log, index) in agora.logs.value" :key="index">
           {{ log }}
         </div>
 
@@ -36,165 +40,37 @@
 </template>
 
 <script setup lang="ts">
-import {nextTick, onMounted, onUnmounted, ref} from 'vue'
-import {useAgora} from "../compositions/useAgora";
-import agora, {IAgoraRTCRemoteUser, ILocalTrack} from "agora-rtc-sdk-ng";
+import {computed, onMounted, ref} from 'vue'
 import {makeid} from "../utils/random-string";
 import VideoCall from "./VideoCall.vue"
-import { getDatabase, ref as dbRef, onValue, set } from "firebase/database";
+import { getDatabase, ref as dbRef, onValue, set } from "firebase/database"
+import useAgora from "../compositions/useAgora";
 
-const userID = ref(makeid(8));
+const uid = makeid(8)
 
-const client = useAgora()
+const agora = useAgora()
 
-const loggers = ref<string[]>([])
+// Users remote
+const users = computed(() => agora.users.value)
+const rtc = computed(() => agora.rtc)
 
-interface IUserRom {
-  uid: string|number
-  localAudioTrack?: ILocalTrack
-  localVideoTrack?: ILocalTrack
+const toggleRom = async () => {
+  if (agora.users.value.length) {
+    await agora.leave()
+  } else {
+    await agora.join('video_meet', uid)
+    agora.publishedHandle()
+    agora.unPublishedHandle()
+  }
 }
 
-const users = ref<IUserRom[]>([])
-
-const createAndJoin = async () => {
-
-  client.on("user-published", trackPublished)
-
-  client.on("user-unpublished", (user: IAgoraRTCRemoteUser, mediaType: "audio" | "video") => {
-    loggers.value.push(`Remove user: ${user.uid}`)
-    users.value = users.value.filter(item => item.uid !== user.uid)
-  })
-
-  await client.join("6bc0bf7f3e364153ba533fd765fb9c60", "video_meet", null, userID.value);
-
-  loggers.value.push(`Joined channel: video_meet`)
-
-
-  const localAudioTrack = await agora.createMicrophoneAudioTrack()
-  const localVideoTrack = await agora.createCameraVideoTrack()
-
-  await configRoom(userID.value, { localAudioTrack, localVideoTrack })
-
-}
-
-/**
- * Kiểm tra user => đẩy vào mảng users
- */
-type Options = {
-  localAudioTrack?: ILocalTrack
-  localVideoTrack?: ILocalTrack
-}
-const configRoom = async (uid: string|number, tracks: Options) => {
-
-  const exist = users.value.findIndex(user => user.uid === uid)
-
-  if (exist > -1) {
-    // Đã tồn tại user
-    // Bỏ qua
-    return
-  }
-
-  const _tracks = []
-
-  const _user: Partial<IUserRom> = {
-    uid
-  }
-
-  if (tracks.localAudioTrack) {
-    _tracks.push(tracks.localAudioTrack)
-    _user.localAudioTrack = tracks.localAudioTrack
-  }
-  if (tracks.localVideoTrack) {
-    _tracks.push(tracks.localVideoTrack)
-    _user.localVideoTrack = tracks.localVideoTrack
-  }
-
-  // Đẩy lên server
-  // @link: https://docs.agora.io/en/Video/start_call_web_ng?platform=Web
-  await client.publish(_tracks)
-
-  // Push vào mảng
-  users.value.push({
-    uid: uid,
-    localVideoTrack: tracks.localVideoTrack
-  })
-}
-
+// Firbase
+const countInvite = ref(0)
 const inviteUsers = () => {
   set(dbRef(getDatabase(), 'rooms/video_meet'), {
     time: Date.now()
   });
 }
-
-
-const trackPublished = async (user: IAgoraRTCRemoteUser, mediaType: "audio" | "video") => {
-  // Initiate the subscription
-  await client.subscribe(user, mediaType);
-
-  loggers.value.push(`New user: ${user.uid}`)
-
-  // If the subscribed track is an audio track
-  if (mediaType === "audio") {
-    // Bỏ qua
-  } else {
-    const videoTrack = user.videoTrack;
-    // Play the video
-    users.value.push({
-      uid: user.uid,
-      localVideoTrack: videoTrack as unknown as ILocalTrack
-    })
-  }
-}
-
-
-
-const leaveRoom = () => {
-  client.leave()
-  client.off("user-published", trackPublished)
-
-  for (const user of users.value) {
-
-    if (user.localVideoTrack) {
-      loggers.value.push(`Stop video track: ${user.uid}`)
-      user.localVideoTrack.stop()
-      user.localAudioTrack?.close()
-    }
-    if (user.localAudioTrack) {
-      loggers.value.push(`Stop audio track: ${user.uid}`)
-      user.localAudioTrack.stop()
-      user.localAudioTrack.close()
-    }
-  }
-
-  users.value = []
-}
-
-const toggleRom = () => {
-  if (users.value.length) {
-    leaveRoom()
-  } else {
-    createAndJoin()
-  }
-}
-
-onMounted(() => {
-
-  loggers.value.push('Init with userID: ' + userID.value)
-
-})
-
-
-
-onUnmounted(() => {
-  client.off("user-published", trackPublished)
-  leaveRoom()
-})
-
-
-
-// Firbase
-const countInvite = ref(0)
 const listenNotify = async () => {
   const starCountRef = dbRef(getDatabase(), 'rooms/video_meet');
   onValue(starCountRef, (snapshot) => {
@@ -206,17 +82,14 @@ const listenNotify = async () => {
      *
      */
 
-    console.log(data)
-
-    if (data && countInvite.value && !users.value.length) {
-      loggers.value.push(`Bạn được mời vào phòng`)
+    if (data && countInvite.value && !agora.users.value.length) {
+      agora.logs.value.push(`Bạn được mời vào phòng`)
     }
 
     countInvite.value++
 
   });
 }
-
 onMounted(() => {
   listenNotify()
 })
@@ -243,5 +116,13 @@ onMounted(() => {
 
 .btns > button + button {
   margin-left: 30px;
+}
+
+.logger {
+  text-align: left;
+}
+
+.logger > div {
+  margin-bottom: 10px;
 }
 </style>

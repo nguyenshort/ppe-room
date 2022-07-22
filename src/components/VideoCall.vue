@@ -13,7 +13,6 @@ const props = defineProps<{
   uid: string|number
   localAudioTrack?: ILocalTrack
   localVideoTrack?: ILocalTrack
-  user: string|number
 }>()
 
 const el = ref<HTMLDivElement>()
