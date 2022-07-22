@@ -5,8 +5,8 @@
 
     <div>
       <pre>
-        audio: {{ localAudioTrack.getTrackId() }}
-        video: {{ localVideoTrack.getTrackId() }}
+        audio: {{ localAudioTrack?.getTrackId() }}
+        video: {{ localVideoTrack?.getTrackId() }}
       </pre>
     </div>
 
