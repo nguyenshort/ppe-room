@@ -37,6 +37,7 @@ export default () => {
     }
 
     const leave = async () => {
+        isCalling.value = false
         // Destroy the local audio and video tracks.
         if(rtc.localAudioTrack) {
             rtc.localVideoTrack?.stop()
