@@ -62,6 +62,8 @@ const toggleRom = async () => {
     agora.publishedHandle()
     agora.unPublishedHandle()
   }
+
+  console.log('remoteUsers', agora.rtc.client.remoteUsers)
 }
 
 // Firbase
