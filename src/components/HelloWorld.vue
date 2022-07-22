@@ -55,7 +55,7 @@ const users = computed(() => agora.users.value)
 const rtc = computed(() => agora.rtc)
 
 const toggleRom = async () => {
-  if (agora.users.value.length) {
+  if (agora.isCalling.value) {
     await agora.leave()
   } else {
     await agora.join('video_meet', uid)
