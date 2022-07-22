@@ -1,6 +1,6 @@
-import {reactive, ref} from "vue";
+import {ref} from "vue";
 import {ILocalClient, IUserRom} from "../types/agoda";
-import AgoraRTC, {IAgoraRTCRemoteUser, ILocalTrack} from "agora-rtc-sdk-ng";
+import type {IAgoraRTCRemoteUser, ILocalTrack} from "agora-rtc-sdk-ng";
 
 /**
  * @link https://docs.agora.io/en/Video/start_call_web_ng?platform=Web
@@ -10,7 +10,7 @@ export default () => {
     const logs = ref<string[]>([])
 
     let rtc: ILocalClient = {
-        client: AgoraRTC.createClient({mode: "rtc", codec: "vp8"}),
+        client: window.AgoraRTC.createClient({mode: "rtc", codec: "vp8"}),
     };
 
     const isCalling = ref(false)
@@ -23,9 +23,9 @@ export default () => {
         await rtc.client.join("6bc0bf7f3e364153ba533fd765fb9c60", "video_meet", null, uid)
         logs.value.push(`Join channel: ${chanel} with uid: ${uid}`)
 
-        rtc.localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+        rtc.localAudioTrack = await window.AgoraRTC.createMicrophoneAudioTrack();
         // Create a local video track from the video captured by a camera.
-        rtc.localVideoTrack = await AgoraRTC.createCameraVideoTrack();
+        rtc.localVideoTrack = await window.AgoraRTC.createCameraVideoTrack();
         // Publish the local audio and video tracks to the RTC channel.
         await rtc.client.publish([rtc.localAudioTrack, rtc.localVideoTrack]);
         logs.value.push(`Publish local audio and video tracks to the RTC channel`)
