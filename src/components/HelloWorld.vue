@@ -7,9 +7,9 @@
       <div class="btns">
 
         <button type="button" @click="toggleRom">
-          {{ users.length ? 'Thoát Phòng' : 'Vào Phòng' }}
+          {{ agora.isCalling.value ? 'Thoát Phòng' : 'Vào Phòng' }}
         </button>
-        <button v-if="users.length" type="button" @click="inviteUsers">
+        <button v-if="agora.isCalling.value" type="button" @click="inviteUsers">
           Mời Bạn Bè
         </button>
 
