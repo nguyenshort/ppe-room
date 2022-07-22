@@ -38,21 +38,12 @@ export default () => {
 
     const leave = async () => {
         // Destroy the local audio and video tracks.
-        rtc.localAudioTrack?.close()
-        rtc.localVideoTrack?.close()
-
-        for (const user of users.value) {
-
-            if (user.localVideoTrack) {
-                logs.value.push(`Stop video track: ${user.uid}`)
-                user.localVideoTrack.stop()
-                user.localAudioTrack?.close()
-            }
-            if (user.localAudioTrack) {
-                logs.value.push(`Stop audio track: ${user.uid}`)
-                user.localAudioTrack.stop()
-                user.localAudioTrack.close()
-            }
+        if(rtc.localAudioTrack) {
+            rtc.localVideoTrack?.stop()
+            rtc.localAudioTrack.close()
+        } else {
+            rtc.localVideoTrack?.stop()
+            rtc.localVideoTrack?.close()
         }
 
         rtc.client.off("user-published", publishedHandle)
