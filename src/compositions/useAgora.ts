@@ -85,6 +85,9 @@ export default () => {
                     users.value[_index].localVideoTrack = user.videoTrack as unknown as ILocalTrack
                 }
             }
+
+            console.log('remote users: ', rtc.client.remoteUsers)
+
         })
     }
 
