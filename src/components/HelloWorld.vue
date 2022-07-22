@@ -58,9 +58,13 @@ const toggleRom = async () => {
   if (agora.isCalling.value) {
     await agora.leave()
   } else {
-    await agora.join('video_meet', uid)
     agora.publishedHandle()
     agora.unPublishedHandle()
+
+    setTimeout(async () => {
+      await agora.join('video_meet', uid)
+    }, 500)
+
   }
 
   console.log('remoteUsers', agora.rtc.client.remoteUsers)
