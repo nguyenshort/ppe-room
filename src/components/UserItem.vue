@@ -32,9 +32,7 @@
 
       <div v-if="videoEnable" ref="el" class="absolute w-full h-full top-0 left-0"></div>
 
-      <div v-else class="max-w-[100px] max-h-[100px] overflow-hidden rounded-full w-3/5 h-3/5 border-2 border-white dark:border-slate-800 shadow transition duration-300 ease-in-out _has_tranform">
-        <img class="w-full h-full" :src="item.user.avatar" :alt="item.user.name" />
-      </div>
+      <auto-avatar v-else class="max-w-[100px] max-h-[100px]" :name="item.user.name" :avatar="item.user.avatar"></auto-avatar>
 
     </div>
 
@@ -46,6 +44,7 @@
 import {computed, nextTick, onMounted, ref, watch} from "vue";
 import {useRoomStore} from "../stores/room";
 import {RoomItem} from "../models/room";
+import AutoAvatar from "./AutoAvatar.vue";
 
 const roomStore = useRoomStore()
 
