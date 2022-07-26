@@ -1,42 +1,68 @@
-<script setup lang="ts">
-// This starter template is using Vue 3 <script setup> SFCs
-// Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
-import HelloWorld from './components/HelloWorld.vue'
-</script>
-
 <template>
-  <div>
-    <div>
-      <a href="https://vitejs.dev" target="_blank">
-        <img src="/vite.svg" class="logo" alt="Vite logo" />
-      </a>
-      <a href="https://vuejs.org/" target="_blank">
-        <img src="/vue.svg" class="logo vue" alt="Vue logo" />
-      </a>
-
-      <a href="https://www.agora.io/en/" target="_blank">
-        <img src="/agora-logo.svg" class="logo agora" alt="Agra logo" />
-      </a>
-
+  <div class="dark">
+    <div class="bg-blue-50 dark:bg-slate-900">
+      <div
+          class="mx-auto min-h-screen bg-white dark:bg-slate-800 px-5 py-5"
+          :class="{
+            'flex items-center justify-center': !inRoom
+          }"
+      >
+        <dynamic-layout v-if="inRoom" />
+        <join-confirm v-else @join="onJoin" />
+      </div>
     </div>
-    <HelloWorld />
   </div>
 </template>
 
-<style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
+<script setup lang="ts">
+import DynamicLayout from "./components/DynamicLayout.vue"
+import {onMounted, reactive, ref} from "vue";
+import JoinConfirm from "./components/JoinConfirm.vue";
+import {useRoomStore} from "./stores/room";
+import agora, {IAgoraRTCClient, IAgoraRTCRemoteUser, ILocalTrack} from "agora-rtc-sdk-ng";
+import {faker} from "@faker-js/faker";
+
+const inRoom = ref(false)
+
+const roomStore = useRoomStore()
+
+const client = agora.createClient({mode: "rtc", codec: "vp8"})
+
+const uid = faker.datatype.number({min: 0, max: 1000000})
+
+const onJoin = async () => {
+
+  await client.join("6bc0bf7f3e364153ba533fd765fb9c60", "smileeye", null, uid)
+
+  console.log(`============== Join: ${uid} ==============`)
+
+
+  await roomStore.join(uid)
+
+  await client.publish([roomStore.rtc.localVideoTrack, roomStore.rtc.localAudioTrack] as ILocalTrack[])
+
+  inRoom.value = true
 }
 
-.logo.agora:hover {
-  filter: drop-shadow(0 0 2em #0b9dfe);
+const addListeners = () => {
+  client.on("user-published", async (user: IAgoraRTCRemoteUser, mediaType: "audio" | "video") => {
+    await client.subscribe(user, mediaType)
+
+    console.log(`============== Subscribe: ${user.uid} ==============`)
+
+    await roomStore.publishedHandle(user, mediaType)
+
+  })
+
+  client.on("user-unpublished", async (user: IAgoraRTCRemoteUser, mediaType: "audio" | "video") => {
+    await client.unsubscribe(user, mediaType)
+
+    console.log(`============== Unsubscribe: ${user.uid} ==============`)
+
+    await roomStore.unPublishedHandle(user)
+  })
 }
-</style>
+
+onMounted(() => addListeners())
+
+</script>
