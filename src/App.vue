@@ -2,7 +2,7 @@
   <div class="dark">
     <div class="bg-blue-50 dark:bg-slate-900">
       <div
-          class="mx-auto min-h-screen bg-white dark:bg-slate-800 px-5 py-5"
+          class="mx-auto min-h-screen bg-white dark:bg-slate-800 p-5"
           :class="{
             'flex items-center justify-center': !inRoom
           }"
@@ -16,7 +16,7 @@
 
 <script setup lang="ts">
 import DynamicLayout from "./components/DynamicLayout.vue"
-import {onMounted, reactive, ref} from "vue";
+import {onMounted, reactive, ref, watch} from "vue";
 import JoinConfirm from "./components/JoinConfirm.vue";
 import {useRoomStore} from "./stores/room";
 import agora, {IAgoraRTCClient, IAgoraRTCRemoteUser, ILocalTrack} from "agora-rtc-sdk-ng";
@@ -64,5 +64,23 @@ const addListeners = () => {
 }
 
 onMounted(() => addListeners())
+
+watch(inRoom, async (value) => {
+  if (value) {
+    client.enableAudioVolumeIndicator()
+
+    /**
+     * Sự kiện bắn ra 2 giây 1 lần...bất kể user có dg nói hay không
+     */
+    client.on("volume-indicator", (volumes) => {
+
+      volumes.forEach((volume) => {
+        roomStore.upsertSpeaker(volume)
+      })
+
+    })
+
+  }
+})
 
 </script>

@@ -1,5 +1,5 @@
 // Thông tin user để hiển thị trên màn hình
-import {IAgoraRTCClient, ILocalTrack} from "agora-rtc-sdk-ng";
+import {IAgoraRTCClient, ILocalTrack, UID} from "agora-rtc-sdk-ng";
 
 export interface User {
     id: string|number
@@ -27,5 +27,10 @@ export interface ILocalClient {
     localAudioTrack?: ILocalTrack
     localVideoTrack?: ILocalTrack
     client?: IAgoraRTCClient
+}
+
+export interface IRomSpeaker {
+    uid: UID
+    level: number
 }
 

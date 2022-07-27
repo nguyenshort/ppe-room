@@ -1,5 +1,5 @@
 <template>
-  <div ref="el" class="dynamic-layout max-h-screen h-full relative overflow-hidden max-w-screen w-full">
+  <div ref="el" class="dynamic-layout h-full relative overflow-hidden max-w-screen w-full animation">
 
     <!-- List các user -->
 
@@ -9,33 +9,43 @@
     </template>
 
     <div
-        class="grid dynamic-grid max-h-screen overflow-y-auto scrollbar-hide relative z-10"
+        class="grid dynamic-grid overflow-y-auto scrollbar-hide relative z-10"
         :class="{
           _on_pinner: roomStore.hasPinner,
         }"
     >
 
       <!-- Current User-->
-      <user-item v-if="roomStore.onCalling" :item="roomStore.rtc" />
+      <user-media-wrapper v-if="roomStore.onCalling" :item="roomStore.rtc" :current="true" />
 
-      <user-item
+      <user-media-wrapper
           v-for="item in roomStore.users"
           :key="item.user.id"
           :item="item"
-      ></user-item>
+      ></user-media-wrapper>
 
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import UserItem from "./UserItem.vue"
 import {useRoomStore} from "../stores/room"
 import AudienceList from "./AudienceList.vue"
 import PresenterBadge from "./PresenterBadge.vue"
-
+import {computed} from "vue"
+import {useWindowSize} from "@vueuse/core";
+import UserMediaWrapper from "./UserMediaWrapper.vue";
 
 const roomStore = useRoomStore()
+
+const { width, height } = useWindowSize()
+
+const aspect = computed(() => {
+
+  // Todo: fix aspect ratio
+  return width.value / (height.value - 25)
+
+})
 
 </script>
 
@@ -50,12 +60,18 @@ export default defineComponent({
 <style>
 
 .dynamic-layout {
+  /*max-height: calc(100vh - 1.25rem - 1.25rem)*/
 }
 
 .dynamic-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   grid-gap: 15px;
+  max-height: 100%;
+}
+
+.item._talking {
+  border-color: #3b66f5 !important;
 }
 
 .item-fill {
@@ -66,7 +82,11 @@ export default defineComponent({
 }
 
 .item {
-  @apply relative overflow-hidden rounded-md aspect-1 dark:border-slate-900 dark:bg-slate-900 cursor-pointer
+  @apply relative overflow-hidden rounded-md dark:border-slate-900 dark:bg-slate-900 cursor-pointer
+}
+
+.item {
+  aspect-ratio: v-bind(aspect);
 }
 
 .item.active {
@@ -95,6 +115,13 @@ export default defineComponent({
 
 .dynamic-grid._on_pinner .item.active ._has_tranform {
   transform: translateX(-70px);
+}
+
+.dynamic-grid._on_pinner .item.active ._auto_avatar {
+  display: none;
+}
+.dynamic-grid._on_pinner .item.active:hover ._auto_avatar {
+  display: block;
 }
 
 </style>

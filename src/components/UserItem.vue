@@ -3,6 +3,7 @@
       class="item border-[3px]"
       :class="{
          active: isPinner,
+         _talking: isTalking,
       }"
   >
 
@@ -30,9 +31,9 @@
     <!-- Avatar Người dùng -->
     <div class="item-fill z-0 flex items-center justify-center avatar">
 
-      <div v-if="videoEnable" ref="el" class="absolute w-full h-full top-0 left-0"></div>
+      <slot></slot>
 
-      <auto-avatar v-else class="max-w-[100px] max-h-[100px]" :name="item.user.name" :avatar="item.user.avatar"></auto-avatar>
+      <auto-avatar class="max-w-[100px] max-h-[100px] _avatar" :name="item.user.name" :avatar="item.user.avatar"></auto-avatar>
 
     </div>
 
@@ -41,7 +42,7 @@
 
 <script lang="ts" setup>
 // Thông tin user để hiển thị trên màn hình
-import {computed, nextTick, onMounted, ref, watch} from "vue";
+import {computed} from "vue";
 import {useRoomStore} from "../stores/room";
 import {RoomItem} from "../models/room";
 import AutoAvatar from "./AutoAvatar.vue";
@@ -50,37 +51,19 @@ const roomStore = useRoomStore()
 
 const props = withDefaults(defineProps<{
   item: RoomItem
-  videoEnable?: boolean,
-}>(), {
-  videoEnable: true,
-})
+}>(), {})
 
 const isPinner = computed(() => {
-  return roomStore.pinner?.user?.id ===  props.item.user.id
+
+  const _pinForce = roomStore.pinner?.user?.id ===  props.item.user.id
+
+  return _pinForce || roomStore.talkers[0]?.uid === props.item.user.id && roomStore.users.length
+
 })
 
-const el = ref<HTMLDivElement>()
 
-onMounted(() => nextTick(() => {
-  if (props.videoEnable) {
-    props.item.localVideoTrack?.play(el.value)
-    props.item.localAudioTrack?.play()
-  }
-}))
-
-watch(() => props.item.localVideoTrack, (track) => {
-  if(props.videoEnable) {
-    console.log("======================change track======================")
-    nextTick(() => {
-      track?.play(el.value)
-    })
-  }
-})
-
-watch(() => props.item.localAudioTrack, (track) => {
-  if(props.videoEnable) {
-    nextTick(() => track?.play())
-  }
+const isTalking = computed(() => {
+  return roomStore.talkers.findIndex((e) => e.uid === props.item.user.id) > -1
 })
 
 </script>

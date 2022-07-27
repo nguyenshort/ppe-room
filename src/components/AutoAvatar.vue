@@ -1,6 +1,6 @@
 <template>
 
-  <div class="overflow-hidden rounded-full w-3/5 h-3/5 border-2 border-white dark:border-slate-800 shadow transition duration-300 ease-in-out _has_tranform">
+  <div class="overflow-hidden rounded-full w-3/5 h-3/5 border-2 border-white dark:border-slate-800 shadow transition duration-300 ease-in-out _has_tranform _auto_avatar">
     <img v-if="avatar" class="w-full h-full" :src="avatar" :alt="name" />
 
     <div v-else class="_auto-avatar w-full h-full flex justify-center items-center text-white text-2xl">

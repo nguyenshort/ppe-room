@@ -1,6 +1,6 @@
 <template>
 
-  <div v-if="roomStore.hasPinner" class="absolute w-[140px] list-user">
+  <div v-if="roomStore.hasPinner" class="absolute w-[140px] audience-list">
 
     <user-item
         class="mt-2 first:mt-0"
@@ -29,15 +29,18 @@ const roomStore = useRoomStore()
 
 <style scoped>
 
-.list-user {
+.audience-list {
   @apply right-0 h-full top-0 z-20 overflow-y-auto scrollbar-hide
 }
 
-.list-user {
+.audience-list {
   background: rgba(30, 41, 58, 0.24);
   padding-left: 10px;
   padding-right: 10px;
 }
 
+.audience-list .item {
+  aspect-ratio: 1;
+}
 
 </style>

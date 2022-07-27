@@ -1,5 +1,5 @@
 import {defineStore} from 'pinia'
-import {ILocalClient, RoomItem} from "../models/room";
+import {ILocalClient, IRomSpeaker, RoomItem} from "../models/room";
 import {IAgoraRTCRemoteUser, ILocalTrack} from "agora-rtc-sdk-ng";
 import {faker} from "@faker-js/faker";
 import agora from 'agora-rtc-sdk-ng'
@@ -9,6 +9,7 @@ interface State {
     pinner?: RoomItem
     rtc: ILocalClient
     onCalling: boolean
+    speakers: IRomSpeaker[]
 }
 
 export const useRoomStore = defineStore('room', {
@@ -21,12 +22,14 @@ export const useRoomStore = defineStore('room', {
             localVideoTrack: undefined,
             user: undefined
         },
-        onCalling: false
+        onCalling: false,
+        speakers: []
     }),
     // optional getters
     getters: {
-        hasPinner: (state) => !!state.pinner,
-        listUsers: (state) => state.users.filter(user => user.user.id !== state.pinner?.user.id)
+        hasPinner: (state) => (!!state.pinner || state.speakers.filter(speaker => speaker.level > 5).length) && state.users.length,
+        listUsers: (state) => state.users.filter(user => user.user.id !== state.pinner?.user.id),
+        talkers: (state) => state.speakers.filter(speaker => speaker.level > 5),
     },
     // optional actions
     actions: {
@@ -112,6 +115,15 @@ export const useRoomStore = defineStore('room', {
             }
 
             this.users = []
+        },
+
+        upsertSpeaker(speaker: IRomSpeaker) {
+            const _index = this.speakers.findIndex(s => s.uid === speaker.uid)
+            if (_index === -1) {
+                this.speakers.push(speaker)
+            } else {
+                this.speakers[_index] = speaker
+            }
         }
 
     },
