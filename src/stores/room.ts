@@ -2,7 +2,6 @@ import {defineStore} from 'pinia'
 import {ILocalClient, IRomSpeaker, RoomItem} from "../models/room";
 import {IAgoraRTCRemoteUser, ILocalTrack} from "agora-rtc-sdk-ng";
 import {faker} from "@faker-js/faker";
-import agora from 'agora-rtc-sdk-ng'
 
 interface State {
     users: RoomItem[]
@@ -39,9 +38,9 @@ export const useRoomStore = defineStore('room', {
         },
 
         async join(uid: string|number) {
-            const localAudioTrack = await agora.createMicrophoneAudioTrack();
+            const localAudioTrack = await window.AgoraRTC.createMicrophoneAudioTrack();
             // Create a local video track from the video captured by a camera.
-            const localVideoTrack = await agora.createCameraVideoTrack();
+            const localVideoTrack = await window.AgoraRTC.createCameraVideoTrack();
             // Publish the local audio and video tracks to the RTC channel.
             this.rtc.localAudioTrack = localAudioTrack
             this.rtc.localVideoTrack = localVideoTrack
