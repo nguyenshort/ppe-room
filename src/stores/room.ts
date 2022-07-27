@@ -1,7 +1,6 @@
 import {defineStore} from 'pinia'
 import {ILocalClient, IRomSpeaker, RoomItem} from "../models/room";
 import {IAgoraRTCRemoteUser, ILocalTrack} from "agora-rtc-sdk-ng";
-import {faker} from "@faker-js/faker";
 
 interface State {
     users: RoomItem[]
@@ -47,8 +46,8 @@ export const useRoomStore = defineStore('room', {
 
             this.rtc.user = {
                 id: uid,
-                name: faker.name.findName(),
-                avatar: faker.image.avatar()
+                name: 'Smileeye',
+                avatar: ''
             }
 
             this.onCalling = true
@@ -73,8 +72,8 @@ export const useRoomStore = defineStore('room', {
                         localAudioTrack: user.audioTrack as unknown as ILocalTrack,
                         user: {
                             id: user.uid,
-                            name: faker.name.findName(),
-                            avatar: faker.image.avatar()
+                            name: 'Smileeye',
+                            avatar: ''
                         }
                     })
                 } else {
@@ -84,8 +83,8 @@ export const useRoomStore = defineStore('room', {
                         localVideoTrack: user.videoTrack as unknown as ILocalTrack,
                         user: {
                             id: user.uid,
-                            name: faker.name.findName(),
-                            avatar: faker.image.avatar()
+                            name: 'Smileeye',
+                            avatar: ''
                         }
                     })
                 }

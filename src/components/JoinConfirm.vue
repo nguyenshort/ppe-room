@@ -49,8 +49,6 @@
 import {nextTick, onMounted, ref, watchEffect} from 'vue'
 import { useDevicesList, useUserMedia } from '@vueuse/core'
 import {useRoomStore} from "../stores/room";
-import {makeid} from "../utils/random-string";
-import {faker} from "@faker-js/faker";
 const currentCamera = ref<string>()
 const { videoInputs: cameras } = useDevicesList({
   requestPermissions: true,

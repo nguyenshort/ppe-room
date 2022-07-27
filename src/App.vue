@@ -20,7 +20,6 @@ import {onMounted, ref, watch} from "vue";
 import JoinConfirm from "./components/JoinConfirm.vue";
 import {useRoomStore} from "./stores/room";
 import {IAgoraRTCRemoteUser, ILocalTrack} from "agora-rtc-sdk-ng";
-import {faker} from "@faker-js/faker";
 
 const inRoom = ref(false)
 
@@ -28,7 +27,7 @@ const roomStore = useRoomStore()
 
 const client = window.AgoraRTC.createClient({mode: "rtc", codec: "vp8"})
 
-const uid = faker.datatype.number({min: 0, max: 1000000})
+const uid = Math.round(Math.random() * 1000000 )
 
 const onJoin = async () => {
 
