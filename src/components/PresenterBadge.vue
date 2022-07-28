@@ -17,8 +17,8 @@ const roomStore = useRoomStore()
 
 const user = computed(() => {
 
-  if(roomStore.pinner?.user) {
-    return roomStore.pinner.user
+  if(roomStore?.user) {
+    return roomStore.user
   }
 
   const _index = roomStore.talkers.findIndex((e) => e.uid === roomStore.talkers[0]?.uid)

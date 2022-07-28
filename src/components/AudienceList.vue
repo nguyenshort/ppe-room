@@ -4,7 +4,7 @@
 
     <user-item
         class="mt-2 first:mt-0"
-        :item="roomStore.rtc"
+        :item="currentUser"
         :videoEnable="false"
     ></user-item>
 
@@ -22,8 +22,20 @@
 <script lang="ts" setup>
 import {useRoomStore} from "../stores/room";
 import UserItem from "./UserItem.vue";
+import {computed} from "vue";
+import {useRTC} from "../compositions/useRTC";
+import {IUserRom} from "../models/room";
 
 const roomStore = useRoomStore()
+
+const rtc = useRTC()
+
+const currentUser = computed<IUserRom>(() => ({
+  uid: roomStore.user?.id || '',
+  user: roomStore.user,
+  localAudioTrack: rtc.localAudioTrack,
+  localVideoTrack: rtc.localVideoTrack,
+}))
 
 </script>
 
@@ -35,8 +47,7 @@ const roomStore = useRoomStore()
 
 .audience-list {
   background: rgba(30, 41, 58, 0.24);
-  padding-left: 10px;
-  padding-right: 10px;
+  padding: 10px;
 }
 
 .audience-list .item {

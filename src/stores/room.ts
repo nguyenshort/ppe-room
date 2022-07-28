@@ -1,33 +1,48 @@
 import {defineStore} from 'pinia'
-import {ILocalClient, IRomSpeaker, RoomItem} from "../models/room";
+import {IRomSpeaker, RoomItem, User} from "../models/room";
 import {IAgoraRTCRemoteUser, ILocalTrack} from "agora-rtc-sdk-ng";
 
 interface State {
+    user?: User
     users: RoomItem[]
-    pinner?: RoomItem
-    rtc: ILocalClient
-    onCalling: boolean
+    pinner?: User
     speakers: IRomSpeaker[]
 }
 
 export const useRoomStore = defineStore('room', {
     // a function that returns a fresh state
     state: (): State => ({
+        user: undefined,
         users: [],
         pinner: undefined,
-        rtc: {
-            localAudioTrack: undefined,
-            localVideoTrack: undefined,
-            user: undefined
-        },
-        onCalling: false,
         speakers: []
     }),
     // optional getters
     getters: {
-        hasPinner: (state) => (!!state.pinner || state.speakers.filter(speaker => speaker.level > 5).length) && state.users.length,
-        listUsers: (state) => state.users.filter(user => user.user.id !== state.pinner?.user.id),
+        // Có user đang ghim
+        hasPinner: (state) => (state.pinner || state.speakers.filter(speaker => speaker.level > 5).length) && state.users.length,
+        listUsers: (state) => state.users.filter(user => user.user.id !== state.user?.id),
         talkers: (state) => state.speakers.filter(speaker => speaker.level > 5),
+        talker: (state): User|undefined => {
+
+            if (state.pinner) return state.pinner
+
+            // Có người đang nói
+            if(state.speakers.filter(speaker => speaker.level > 5).length) {
+
+                // Người đầu tiên
+                const uid = state.speakers.filter(speaker => speaker.level > 5)[0].uid
+
+                if(uid === state.user?.id) return state.user
+
+                const index = state.users.findIndex(user => user.user.id === uid)
+                if (index > -1) {
+                    return state.users[index].user
+                }
+
+            }
+
+        }
     },
     // optional actions
     actions: {
@@ -36,30 +51,12 @@ export const useRoomStore = defineStore('room', {
             this.users = users
         },
 
-        async join(uid: string|number) {
-            const localAudioTrack = await window.AgoraRTC.createMicrophoneAudioTrack();
-            // Create a local video track from the video captured by a camera.
-            const localVideoTrack = await window.AgoraRTC.createCameraVideoTrack();
-            // Publish the local audio and video tracks to the RTC channel.
-            this.rtc.localAudioTrack = localAudioTrack
-            this.rtc.localVideoTrack = localVideoTrack
-
-            this.rtc.user = {
-                id: uid,
-                name: 'Smileeye',
-                avatar: ''
-            }
-
-            this.onCalling = true
+        setUser(user?: User) {
+            this.user = user
         },
 
-        togglePinner(item?: RoomItem) {
-
-            if (this.pinner?.user?.id === item?.user.id) {
-                this.pinner = undefined
-            } else {
-                this.pinner = item
-            }
+        setPinner(user?: User) {
+            this.pinner = user
         },
 
         async publishedHandle(user: IAgoraRTCRemoteUser, mediaType: "audio" | "video") {
@@ -100,19 +97,6 @@ export const useRoomStore = defineStore('room', {
 
         unPublishedHandle(user: IAgoraRTCRemoteUser) {
             this.users = this.users.filter(item => item.uid !== user.uid)
-        },
-
-        async leave() {
-            // Destroy the local audio and video tracks.
-            if (this.rtc.localAudioTrack) {
-                this.rtc.localVideoTrack?.stop()
-                this.rtc.localAudioTrack.close()
-            } else {
-                this.rtc.localVideoTrack?.stop()
-                this.rtc.localVideoTrack?.close()
-            }
-
-            this.users = []
         },
 
         upsertSpeaker(speaker: IRomSpeaker) {

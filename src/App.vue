@@ -8,7 +8,7 @@
           }"
       >
         <dynamic-layout v-if="inRoom" />
-        <join-confirm v-else @join="onJoin" />
+        <join-confirm v-else @join="inRoom = true" />
       </div>
     </div>
   </div>
@@ -16,70 +16,30 @@
 
 <script setup lang="ts">
 import DynamicLayout from "./components/DynamicLayout.vue"
-import {onMounted, ref, watch} from "vue";
+import {onMounted, ref} from "vue";
 import JoinConfirm from "./components/JoinConfirm.vue";
 import {useRoomStore} from "./stores/room";
-import {IAgoraRTCRemoteUser, ILocalTrack} from "agora-rtc-sdk-ng";
+import {IAgoraRTCRemoteUser} from "agora-rtc-sdk-ng";
+import {useRTC} from "./compositions/useRTC";
 
 const inRoom = ref(false)
 
 const roomStore = useRoomStore()
 
-const client = window.AgoraRTC.createClient({mode: "rtc", codec: "vp8"})
-
-const uid = Math.round(Math.random() * 1000000 )
-
-const onJoin = async () => {
-
-  await client.join("6bc0bf7f3e364153ba533fd765fb9c60", "smileeye", null, uid)
-
-  console.log(`============== Join: ${uid} ==============`)
-
-
-  await roomStore.join(uid)
-
-  await client.publish([roomStore.rtc.localVideoTrack, roomStore.rtc.localAudioTrack] as ILocalTrack[])
-
-  inRoom.value = true
-}
+const rtc = useRTC()
 
 const addListeners = () => {
-  client.on("user-published", async (user: IAgoraRTCRemoteUser, mediaType: "audio" | "video") => {
-    await client.subscribe(user, mediaType)
-
-    console.log(`============== Subscribe: ${user.uid} ==============`)
-
+  rtc.client.on("user-published", async (user: IAgoraRTCRemoteUser, mediaType: "audio" | "video") => {
+    await rtc.client.subscribe(user, mediaType)
     await roomStore.publishedHandle(user, mediaType)
 
   })
 
-  client.on("user-unpublished", async (user: IAgoraRTCRemoteUser, mediaType: "audio" | "video") => {
-    await client.unsubscribe(user, mediaType)
-
-    console.log(`============== Unsubscribe: ${user.uid} ==============`)
-
+  rtc.client.on("user-unpublished", async (user: IAgoraRTCRemoteUser, mediaType: "audio" | "video") => {
+    await rtc.client.unsubscribe(user, mediaType)
     await roomStore.unPublishedHandle(user)
   })
 }
 
 onMounted(() => addListeners())
-
-watch(inRoom, async (value) => {
-  if (value) {
-    client.enableAudioVolumeIndicator()
-
-    /**
-     * Sự kiện bắn ra 2 giây 1 lần...bất kể user có dg nói hay không
-     */
-    client.on("volume-indicator", (volumes) => {
-
-      volumes.forEach((volume) => {
-        roomStore.upsertSpeaker(volume)
-      })
-
-    })
-
-  }
-})
-
 </script>

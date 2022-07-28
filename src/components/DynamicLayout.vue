@@ -16,15 +16,23 @@
     >
 
       <!-- Current User-->
-      <user-media-wrapper v-if="roomStore.onCalling" :item="roomStore.rtc" :current="true" />
+      <user-media-wrapper
+          v-bind="{
+            current: true,
+            item: currentUser
+          }"
+      />
 
       <user-media-wrapper
-          v-for="item in roomStore.users"
-          :key="item.user.id"
+          v-for="(item, index) in roomStore.users"
+          :key="index"
           :item="item"
       ></user-media-wrapper>
 
     </div>
+
+    <layout-controls />
+
   </div>
 </template>
 
@@ -32,29 +40,48 @@
 import {useRoomStore} from "../stores/room"
 import AudienceList from "./AudienceList.vue"
 import PresenterBadge from "./PresenterBadge.vue"
-import {computed} from "vue"
+import {computed, onMounted} from "vue"
 import {useWindowSize} from "@vueuse/core";
 import UserMediaWrapper from "./UserMediaWrapper.vue";
+import {useRTC} from "../compositions/useRTC";
+import LayoutControls from "./LayoutControls.vue";
 
 const roomStore = useRoomStore()
+
+const rtc = useRTC()
+
+const currentUser = computed(() => ({
+  uid: roomStore.user?.id || '',
+  user: roomStore.user,
+  localAudioTrack: rtc.localAudioTrack,
+  localVideoTrack: rtc.localVideoTrack,
+}))
 
 const { width, height } = useWindowSize()
 
 const aspect = computed(() => {
-
   // Todo: fix aspect ratio
   return width.value / (height.value - 25)
-
 })
 
-</script>
 
-<script lang="ts">
-import {defineComponent} from "vue";
+const listenVolume = () => {
+  rtc.client.enableAudioVolumeIndicator()
 
-export default defineComponent({
-  name: "DynamicLayout"
-})
+  /**
+   * Sự kiện bắn ra 2 giây 1 lần...bất kể user có dg nói hay không
+   */
+  rtc.client.on("volume-indicator", (volumes) => {
+
+    volumes.forEach((volume) => {
+      roomStore.upsertSpeaker(volume)
+    })
+
+  })
+}
+
+onMounted(() => listenVolume())
+
 </script>
 
 <style>
