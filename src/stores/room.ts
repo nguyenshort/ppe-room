@@ -95,10 +95,6 @@ export const useRoomStore = defineStore('room', {
             }
         },
 
-        unPublishedHandle(user: IAgoraRTCRemoteUser) {
-            this.users = this.users.filter(item => item.uid !== user.uid)
-        },
-
         upsertSpeaker(speaker: IRomSpeaker) {
             const _index = this.speakers.findIndex(s => s.uid === speaker.uid)
             if (_index === -1) {

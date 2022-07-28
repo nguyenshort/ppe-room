@@ -11,7 +11,7 @@
         class="item-fill action z-[1] flex items-center justify-center relative opacity-0 hover:opacity-100 action"
     >
 
-      <button class="text-white relative z-[1] transition duration-300 ease-in-out _has_tranform px-4 py-2" @click="togglePinner">
+      <button v-if="roomStore.users.length" class="text-white relative z-[1] transition duration-300 ease-in-out _has_tranform px-4 py-2" @click="togglePinner">
 
         <div class="flex items-center flex-col">
           <svg class="fill-current" width="25px" height="25px" viewBox="0 0 512 512"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M256 400V32l176 80-176 80"/><path d="M256 336c-87 0-175.3 43.2-191.64 124.74C62.39 470.57 68.57 480 80 480h352c11.44 0 17.62-9.43 15.65-19.26C431.3 379.2 343 336 256 336z" fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="32"/></svg>
