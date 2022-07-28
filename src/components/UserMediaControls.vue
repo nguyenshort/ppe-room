@@ -17,7 +17,7 @@
 
 <script lang="ts" setup>
 
-import {onMounted, reactive, watch} from "vue"
+import {onMounted, reactive} from "vue"
 import {useRTC} from "../compositions/useRTC";
 
 const rtc = useRTC()
